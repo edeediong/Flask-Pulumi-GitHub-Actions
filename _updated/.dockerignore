@@ -1,0 +1,13 @@
+# ignore all git and cache
+.git
+.cache
+.gitignore
+
+# ignore all markdown files (md) beside all README*.md other than README-secret.md
+*.md
+!README*.md
+README-secret.md
+
+# other files
+LICENSE
+fabfile.py
