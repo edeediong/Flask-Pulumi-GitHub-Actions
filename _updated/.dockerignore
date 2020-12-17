@@ -2,6 +2,7 @@
 .git
 .cache
 .gitignore
+.gitattributes
 
 # ignore all markdown files (md) beside all README*.md other than README-secret.md
 *.md
@@ -10,4 +11,3 @@ README-secret.md
 
 # other files
 LICENSE
-fabfile.py
