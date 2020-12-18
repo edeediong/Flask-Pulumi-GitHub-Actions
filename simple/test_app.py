@@ -1,7 +1,9 @@
-from app import app
+"""A basic test written with unittest to test flask application."""
 
 import unittest
 import json
+
+from app import app
 
 class CitiesTestCase(unittest.TestCase):
 
