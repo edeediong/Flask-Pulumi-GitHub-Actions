@@ -6,5 +6,7 @@ COPY ./requirements.txt /server/requirements.txt
 
 RUN pip install -r requirements.txt
 
+EXPOSE 80
+
 ENTRYPOINT [ "python" ]
 CMD [ "app.py" ]

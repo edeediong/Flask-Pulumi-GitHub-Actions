@@ -1,4 +1,4 @@
-"""A basic flask application.s"""
+"""A basic flask applications"""
 import os
 from flask import Flask
 from flask import Response
