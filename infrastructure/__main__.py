@@ -4,7 +4,7 @@ import json
 
 # Create an ECS cluster to
 cluster = aws.ecs.Cluster("flask", {
-    tags: {
+    "tags": {
         "Name": "flask-pulumi-ecs-cluster"
     }
 })
@@ -79,6 +79,9 @@ rpa = aws.iam.RolePolicyAttachment(
     policy_arn="arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
 )
 
+repository = aws.ecr.Repository("repo")
+img = repository.buildAndPushImage("./simple")
+
 # Spin up a load balanced service running our container image
 task_definition = aws.ecs.TaskDefinition(
     "app-task",
@@ -90,7 +93,7 @@ task_definition = aws.ecs.TaskDefinition(
     execution_role_arn=role.arn,
     container_definitions=json.dumps([{
         "name": "flask-pulumi",
-        "image": "",
+        "image": img,
         "portMappings": [{
             "containerPort": 80,
             "hostPort": 80,
