@@ -79,7 +79,7 @@ rpa = aws.iam.RolePolicyAttachment(
     policy_arn="arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
 )
 
-repository = aws.ecr.Repository("repo")
+repository = aws.ecr.Repository("flask-pulumi")
 img = repository.buildAndPushImage("./simple")
 
 # Spin up a load balanced service running our container image
