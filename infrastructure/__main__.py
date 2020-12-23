@@ -84,18 +84,18 @@ elb_sg = aws.ec2.SecurityGroup("elb_sg",
     },
 )
 
-volume_id = aws.ebs.Volume("volume_id",
-    availability_zone="us-east-2b",
-    tags={
-        "Name": "FlaskPulumi",
-    },
-)
+# volume_id = aws.ebs.Volume("volume_id",
+#     availability_zone="us-east-2b",
+#     tags={
+#         "Name": "FlaskPulumi",
+#     },
+# )
 
-ebs = aws.ec2.VolumeAttachment("ebs",
-    device_name="/dev/sda1",
-    instance_id=web.id,
-    volume_id=volume_id.id,
-)
+# ebs = aws.ec2.VolumeAttachment("ebs",
+#     device_name="/dev/sda1",
+#     instance_id=web.id,
+#     volume_id=volume_id.id,
+# )
 
 ingress = aws.ec2.SecurityGroupRule("ingress",
     cidr_blocks=["0.0.0.0/0"],
