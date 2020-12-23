@@ -1,15 +1,16 @@
-name: Python package
+name: CI/CD
 
 on:
   push:
   pull_request:
 
 jobs:
-  build:
+  buildAndTest:
+    name: CI Pipeline
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.6', '3.7', '3.8']
+        python-version: ['3.7']
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +22,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -32,22 +33,71 @@ jobs:
       run: |
         pytest
 
+  deploy:
+    name: CD Pipeline
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7]
+        appname: ['aws-codedeploy']
+        deploy-group: ['accure-test']
+        s3-bucket: ['accure-codedeploy-deployment']
+        s3-filename: ['accure-deploy-${{ github.sha }}']
+
+    # Build & Test Images
+    needs: buildAndTest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8 pytest
+        if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest
+
+    # Install AWS CLI 2
+    - name: Install AWS CLI 2
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip "awscliv2.zip"
+        sudo ./aws/install
+
+    # Configure AWS credentials
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: flask-pulumi
-        IMAGE_TAG: ${{ github.sha }}
+    # Deploy push to AWS S3
+    - name: AWS Deploy Push
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        aws deploy push \
+        --application-name ${{ matrix.appname }} \
+        --description "This is a revision for the ${{ matrix.appname }}-${{ github.sha }}" \
+        --ignore-hidden-files \
+        --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
+        --source .
+
+    # Create deployment to CodeDeploy
+    - name: AWS Create Deployment
+      run: |
+        aws deploy create-deployment \
+          --application-name ${{ matrix.appname }} \
+          --deployment-config-name CodeDeployDefault.OneAtATime \
+          --deployment-group-name ${{ matrix.deploy-group }} \
+          --file-exists-behavior OVERWRITE \
+          --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip \
