@@ -140,34 +140,34 @@ deploy_group = aws.codedeploy.DeploymentGroup("deploy_group",
     service_role_arn=codedeploy.arn,
 )
 
-g_actions = aws.iam.User(
-    "g_actions",
-    force_destroy=False,
-    name="accure-codedeploy",
-    path="/",
-    tags={
-        "Name": "GitHub-Actions-User",
-    },
-)
+# g_actions = aws.iam.User(
+#     "g_actions",
+#     force_destroy=False,
+#     name="accure-codedeploy",
+#     path="/",
+#     tags={
+#         "Name": "GitHub-Actions-User",
+#     },
+# )
 
-user_attach = aws.iam.UserPolicyAttachment(
-    "user_attach",
-    policy_arn="arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    user="accure-codedeploy",
-)
+# user_attach = aws.iam.UserPolicyAttachment(
+#     "user_attach",
+#     policy_arn="arn:aws:iam::aws:policy/AmazonS3FullAccess",
+#     user="accure-codedeploy",
+# )
 
-user_attach_1 = aws.iam.UserPolicyAttachment(
-    "user_attach_1",
-    policy_arn="arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess",
-    user="accure-codedeploy",
-)
+# user_attach_1 = aws.iam.UserPolicyAttachment(
+#     "user_attach_1",
+#     policy_arn="arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess",
+#     user="accure-codedeploy",
+# )
 
-g_actions_access_key = aws.iam.AccessKey(
-    "g_actions_access",
-    user=g_actions.name,
-    pgp_key="keybase:some_person_that_exists"
-)
+# g_actions_access_key = aws.iam.AccessKey(
+#     "g_actions_access",
+#     user=g_actions.name,
+#     pgp_key="keybase:some_person_that_exists"
+# )
 
-pulumi.export("secret_access_key_id", g_actions_access_key.id)
-pulumi.export("secret", g_actions_access_key.encrypted_secret)
+# pulumi.export("secret_access_key_id", g_actions_access_key.id)
+# pulumi.export("secret", g_actions_access_key.encrypted_secret)
 pulumi.export("public_ip", web.public_ip)
