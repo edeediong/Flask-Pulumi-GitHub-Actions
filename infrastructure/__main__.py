@@ -87,29 +87,22 @@ elb_sg = aws.ec2.SecurityGroup("elb_sg",
     description="launch-wizard-2 for aws instance firewalls",
     name="launch-wizard-2",
     revoke_rules_on_delete=False,
+    ingress=[aws.ec2.SecurityGroupIngressArgs(
+        protocol="tcp",
+        from_port=5000,
+        to_port=5000,
+        cidr_blocks=["0.0.0.0/0"]
+        ),
+        aws.ec2.SecurityGroupIngressArgs(
+            protocol="tcp",
+            from_port=22,
+            to_port=22,
+            cidr_blocks=["0.0.0.0/0"]
+        ),
+    ],
     tags={
         "Name": "AccureFlask",
     },
-)
-
-ingress = aws.ec2.SecurityGroupRule("ingress",
-    cidr_blocks=["0.0.0.0/0"],
-    from_port=5000,
-    protocol="tcp",
-    security_group_id=elb_sg.id,
-    self=False,
-    to_port=5000,
-    type="ingress",
-)
-
-ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
-    cidr_blocks=["0.0.0.0/0"],
-    from_port=22,
-    protocol="tcp",
-    security_group_id=elb_sg.id,
-    self=False,
-    to_port=22,
-    type="ingress",
 )
 
 web = aws.ec2.Instance("web",
@@ -137,6 +130,49 @@ web = aws.ec2.Instance("web",
 #     device_name="/dev/sda1",
 #     instance_id=web.id,
 #     volume_id=volume_id.id,
+# )
+
+# elb_sg = aws.ec2.SecurityGroup("elb_sg",
+#     description="launch-wizard-2 for aws instance firewalls",
+#     name="launch-wizard-2",
+#     revoke_rules_on_delete=False,
+#     tags={
+#         "Name": "AccureFlask",
+#     },
+# )
+
+# ingress = aws.ec2.SecurityGroupRule("ingress",
+#     cidr_blocks=["0.0.0.0/0"],
+#     from_port=5000,
+#     protocol="tcp",
+#     security_group_id=elb_sg.id,
+#     self=False,
+#     to_port=5000,
+#     type="ingress",
+# )
+
+# ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
+#     cidr_blocks=["0.0.0.0/0"],
+#     from_port=22,
+#     protocol="tcp",
+#     security_group_id=elb_sg.id,
+#     self=False,
+#     to_port=22,
+#     type="ingress",
+# )
+
+# web = aws.ec2.Instance("web",
+#     ami="ami-0dd9f0e7df0f0a138",
+#     get_password_data=False,
+#     iam_instance_profile=ec2_role.name,
+#     instance_type="t2.micro",
+#     vpc_security_group_ids=[elb_sg.id],
+#     source_dest_check=True,
+#     key_name="flaskpulumi",
+#     tags={
+#         "Name": "FlaskPulumi",
+#     },
+#     user_data=user_data,
 # )
 
 bucket = aws.s3.Bucket("bucket",
