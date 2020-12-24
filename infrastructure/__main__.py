@@ -3,6 +3,20 @@
 import pulumi
 import pulumi_aws as aws
 
+user_data = """
+#!/bin/bash
+sudo apt-get update -y
+sudo apt-get install -y ruby
+sudo apt-get install -y wget
+cd /home/ubuntu
+wget https://bucket-name.s3.region-identifier.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+sudo apt update -y
+sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
+sudo apt install -y python3-venv
+"""
+
 ec2_role = aws.iam.Role(
     "ec2_role",
     assume_role_policy="""{
@@ -73,12 +87,8 @@ web = aws.ec2.Instance("web",
     tags={
         "Name": "FlaskPulumi",
     },
-    user_data_base64="""IyEvYmluL2Jhc2gNCnN1ZG8gYXB0LWdldCB1cGRhdGUgLXkNCnN1ZG8gYXB0LWdldCBpbnN0YWxsIC15IHJ1Ynk
-    NCnN1ZG8gYXB0LWdldCBpbnN0YWxsIC15IHdnZXQNCmNkIC9ob21lL3VidW50dQ0Kd2dldCBodHRwczovL2J1Y2tldC1uYW1lLnMzLnJlZ2l
-    vbi1pZGVudGlmaWVyLmFtYXpvbmF3cy5jb20vbGF0ZXN0L2luc3RhbGwNCmNobW9kICt4IC4vaW5zdGFsbA0Kc3VkbyAuL2luc3RhbGwgYXV
-    0bw0Kc3VkbyBhcHQgdXBkYXRlIC15IA0Kc3VkbyBhcHQgaW5zdGFsbCAteSBweXRob24zLXBpcCBweXRob24zLWRldiBidWlsZC1lc3NlbnR
-    pYWwgbGlic3NsLWRldiBsaWJmZmktZGV2IHB5dGhvbjMtc2V0dXB0b29scw0Kc3VkbyBhcHQgaW5zdGFsbCAteSBweXRob24zLXZlbnYNCg==""",
-)
+    user_data=user_data,
+    )
 
 elb_sg = aws.ec2.SecurityGroup("elb_sg",
     description="launch-wizard-2 created 2020-12-21T14:38:16.185+01:00",

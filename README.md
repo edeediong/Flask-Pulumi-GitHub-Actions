@@ -16,6 +16,7 @@ Project Structure
   ├── README.md
   ├── appspec.yml
   ├── infrastructure
+  │   ├── Pulumi.accure.yaml
   │   ├── Pulumi.yaml
   │   ├── __main__.py
   │   └── requirements.txt
@@ -31,12 +32,19 @@ Project Structure
 
   ```
 
-### Screenshots
+### Notes
+Ensure you run `pulumi stack init stack-name` then create a `.pulumi` folder, create a file called `ci.json` with the following content
 
-![Pages](https://github.com/realpython/flask-boilerplate/blob/master/screenshots/pages.png)
+```JSON
+{
+    "main": "accure"
+}
+```
+This will tell GitHub Actions to use the main branch with the stack created on Pulumi.
 
-![Forms](https://github.com/realpython/flask-boilerplate/blob/master/screenshots/forms.png)
+Also ensure the pip packages needed to execute your code are placed in `requirements.txt`.
 
+Also, run `pulumi config set aws:region <value>` to set the aws region for your resource.
 
 ### Quick Start
 
