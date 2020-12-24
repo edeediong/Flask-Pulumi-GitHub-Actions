@@ -69,16 +69,34 @@ web = aws.ec2.Instance("web",
     iam_instance_profile="CodeDeployInstanceRole",
     instance_type="t2.micro",
     source_dest_check=True,
+    key_name="flaskpulumi",
     tags={
         "Name": "FlaskPulumi",
     },
-    user_data_base64="IyEvYmluL2Jhc2gNCnN1ZG8gYXB0LWdldCB1cGRhdGUNCnN1ZG8gYXB0LWdldCBpbnN0YWxsIHJ1YnkNCnN1ZG8gYXB0LWdldCBpbnN0YWxsIHdnZXQNCmNkIC9ob21lL3VidW50dQ0Kd2dldCBodHRwczovL2J1Y2tldC1uYW1lLnMzLnJlZ2lvbi1pZGVudGlmaWVyLmFtYXpvbmF3cy5jb20vbGF0ZXN0L2luc3RhbGwNCmNobW9kICt4IC4vaW5zdGFsbA0Kc3VkbyAuL2luc3RhbGwgYXV0bw0Kc3VkbyBzZXJ2aWNlIGNvZGVkZXBsb3ktYWdlbnQgc3RhcnQ=",
+    user_data_base64="""IyEvYmluL2Jhc2gNCnN1ZG8gYXB0LWdldCB1cGRhdGUgLXkNCnN1ZG8gYXB0LWdldCBpbnN0YWxsIC15IHJ1Ynk
+    NCnN1ZG8gYXB0LWdldCBpbnN0YWxsIC15IHdnZXQNCmNkIC9ob21lL3VidW50dQ0Kd2dldCBodHRwczovL2J1Y2tldC1uYW1lLnMzLnJlZ2l
+    vbi1pZGVudGlmaWVyLmFtYXpvbmF3cy5jb20vbGF0ZXN0L2luc3RhbGwNCmNobW9kICt4IC4vaW5zdGFsbA0Kc3VkbyAuL2luc3RhbGwgYXV
+    0bw0Kc3VkbyBhcHQgdXBkYXRlIC15IA0Kc3VkbyBhcHQgaW5zdGFsbCAteSBweXRob24zLXBpcCBweXRob24zLWRldiBidWlsZC1lc3NlbnR
+    pYWwgbGlic3NsLWRldiBsaWJmZmktZGV2IHB5dGhvbjMtc2V0dXB0b29scw0Kc3VkbyBhcHQgaW5zdGFsbCAteSBweXRob24zLXZlbnYNCg==""",
 )
 
 elb_sg = aws.ec2.SecurityGroup("elb_sg",
     description="launch-wizard-2 created 2020-12-21T14:38:16.185+01:00",
     name="launch-wizard-2",
     revoke_rules_on_delete=False,
+    ingress=[aws.ec2.SecurityGroupIngressArgs(
+        protocol="tcp",
+        from_port=5000,
+        to_port=5000,
+        cidr_blocks=["0.0.0.0/0"]
+        ),
+        aws.ec2.SecurityGroupIngressArgs(
+            protocol="tcp",
+            from_port=22,
+            to_port=22,
+            cidr_blocks=["0.0.0.0/0"]
+        ),
+    ],
     tags={
         "Name": "AccureFlask",
     },
@@ -96,26 +114,6 @@ elb_sg = aws.ec2.SecurityGroup("elb_sg",
 #     instance_id=web.id,
 #     volume_id=volume_id.id,
 # )
-
-ingress = aws.ec2.SecurityGroupRule("ingress",
-    cidr_blocks=["0.0.0.0/0"],
-    from_port=5000,
-    protocol="tcp",
-    security_group_id=elb_sg.id,
-    self=False,
-    to_port=5000,
-    type="ingress",
-)
-
-ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
-    cidr_blocks=["0.0.0.0/0"],
-    from_port=22,
-    protocol="tcp",
-    security_group_id=elb_sg.id,
-    self=False,
-    to_port=22,
-    type="ingress",
-)
 
 bucket = aws.s3.Bucket("bucket",
     acl="private",
@@ -172,3 +170,4 @@ g_actions_access_key = aws.iam.AccessKey(
 
 pulumi.export("secret_access_key_id", g_actions_access_key.id)
 pulumi.export("secret", g_actions_access_key.encrypted_secret)
+pulumi.export("public_ip", web.public_ip)
