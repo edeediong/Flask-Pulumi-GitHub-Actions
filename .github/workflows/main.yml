@@ -21,7 +21,7 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_ROOT: infrastructure
 
-  buildAnTest:
+  buildAndTest:
     name: CI Pipeline
     runs-on: ubuntu-latest
     strategy:
