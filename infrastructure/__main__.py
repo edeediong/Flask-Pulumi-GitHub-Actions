@@ -39,6 +39,12 @@ ec2_role = aws.iam.Role(
     tags={"Name": "CodeDeployEC2",},
 )
 
+instance_profile = aws.iam.InstanceProfile("instance_profile",
+    name="CodeDeployInstanceRole",
+    path="/",
+    role=ec2_role.name,
+)
+
 role_attach = aws.iam.RolePolicyAttachment("role_attach",
     policy_arn="arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy",
     role=ec2_role.name,
