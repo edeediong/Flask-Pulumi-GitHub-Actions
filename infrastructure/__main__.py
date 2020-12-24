@@ -41,12 +41,12 @@ ec2_role = aws.iam.Role(
 
 role_attach = aws.iam.RolePolicyAttachment("role_attach",
     policy_arn="arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy",
-    role="CodeDeployInstanceRole",
+    role=ec2_role.name,
 )
 
 role_attach_1 = aws.iam.RolePolicyAttachment("role_attach_1",
     policy_arn="arn:aws:iam::aws:policy/service-role/AutoScalingNotificationAccessRole",
-    role="CodeDeployInstanceRole",
+    role=ec2_role.name,
 )
 
 codedeploy = aws.iam.Role(
@@ -74,13 +74,13 @@ codedeploy = aws.iam.Role(
 
 codedeploy_attach = aws.iam.RolePolicyAttachment("codedeploy_attach",
     policy_arn="arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole",
-    role="CodeDeployServiceRole",
+    role=codedeploy.name,
 )
 
 web = aws.ec2.Instance("web",
     ami="ami-0dd9f0e7df0f0a138",
     get_password_data=False,
-    iam_instance_profile="CodeDeployInstanceRole",
+    iam_instance_profile=ec2_role.name,
     instance_type="t2.micro",
     source_dest_check=True,
     key_name="flaskpulumi",
@@ -91,7 +91,7 @@ web = aws.ec2.Instance("web",
     )
 
 elb_sg = aws.ec2.SecurityGroup("elb_sg",
-    description="launch-wizard-2 created 2020-12-21T14:38:16.185+01:00",
+    description="launch-wizard-2 for aws instance firewalls",
     name="launch-wizard-2",
     revoke_rules_on_delete=False,
     ingress=[aws.ec2.SecurityGroupIngressArgs(
@@ -137,7 +137,7 @@ appname = aws.codedeploy.Application("appname",
 )
 
 deploy_group = aws.codedeploy.DeploymentGroup("deploy_group",
-    app_name="aws-codedeploy",
+    app_name=appname.name,
     deployment_config_name="CodeDeployDefault.AllAtOnce",
     deployment_group_name="accure-test",
     ec2_tag_sets=[aws.codedeploy.DeploymentGroupEc2TagSetArgs(
