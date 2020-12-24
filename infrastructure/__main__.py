@@ -87,22 +87,29 @@ elb_sg = aws.ec2.SecurityGroup("elb_sg",
     description="launch-wizard-2 for aws instance firewalls",
     name="launch-wizard-2",
     revoke_rules_on_delete=False,
-    ingress=[aws.ec2.SecurityGroupIngressArgs(
-        protocol="tcp",
-        from_port=5000,
-        to_port=5000,
-        cidr_blocks=["0.0.0.0/0"]
-        ),
-        aws.ec2.SecurityGroupIngressArgs(
-            protocol="tcp",
-            from_port=22,
-            to_port=22,
-            cidr_blocks=["0.0.0.0/0"]
-        ),
-    ],
     tags={
         "Name": "AccureFlask",
     },
+)
+
+ingress = aws.ec2.SecurityGroupRule("ingress",
+    cidr_blocks=["0.0.0.0/0"],
+    from_port=5000,
+    protocol="tcp",
+    security_group_id=elb_sg.id,
+    self=False,
+    to_port=5000,
+    type="ingress",
+)
+
+ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
+    cidr_blocks=["0.0.0.0/0"],
+    from_port=22,
+    protocol="tcp",
+    security_group_id=elb_sg.id,
+    self=False,
+    to_port=22,
+    type="ingress",
 )
 
 web = aws.ec2.Instance("web",
@@ -118,62 +125,6 @@ web = aws.ec2.Instance("web",
     },
     user_data=user_data,
 )
-
-# volume_id = aws.ebs.Volume("volume_id",
-#     availability_zone="us-east-2b",
-#     tags={
-#         "Name": "FlaskPulumi",
-#     },
-# )
-
-# ebs = aws.ec2.VolumeAttachment("ebs",
-#     device_name="/dev/sda1",
-#     instance_id=web.id,
-#     volume_id=volume_id.id,
-# )
-
-# elb_sg = aws.ec2.SecurityGroup("elb_sg",
-#     description="launch-wizard-2 for aws instance firewalls",
-#     name="launch-wizard-2",
-#     revoke_rules_on_delete=False,
-#     tags={
-#         "Name": "AccureFlask",
-#     },
-# )
-
-# ingress = aws.ec2.SecurityGroupRule("ingress",
-#     cidr_blocks=["0.0.0.0/0"],
-#     from_port=5000,
-#     protocol="tcp",
-#     security_group_id=elb_sg.id,
-#     self=False,
-#     to_port=5000,
-#     type="ingress",
-# )
-
-# ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
-#     cidr_blocks=["0.0.0.0/0"],
-#     from_port=22,
-#     protocol="tcp",
-#     security_group_id=elb_sg.id,
-#     self=False,
-#     to_port=22,
-#     type="ingress",
-# )
-
-# web = aws.ec2.Instance("web",
-#     ami="ami-0dd9f0e7df0f0a138",
-#     get_password_data=False,
-#     iam_instance_profile=ec2_role.name,
-#     instance_type="t2.micro",
-#     vpc_security_group_ids=[elb_sg.id],
-#     source_dest_check=True,
-#     key_name="flaskpulumi",
-#     tags={
-#         "Name": "FlaskPulumi",
-#     },
-#     user_data=user_data,
-# )
 
 bucket = aws.s3.Bucket("bucket",
     acl="private",
@@ -200,34 +151,4 @@ deploy_group = aws.codedeploy.DeploymentGroup("deploy_group",
     service_role_arn=codedeploy.arn,
 )
 
-# g_actions = aws.iam.User(
-#     "g_actions",
-#     force_destroy=False,
-#     name="accure-codedeploy",
-#     path="/",
-#     tags={
-#         "Name": "GitHub-Actions-User",
-#     },
-# )
-
-# user_attach = aws.iam.UserPolicyAttachment(
-#     "user_attach",
-#     policy_arn="arn:aws:iam::aws:policy/AmazonS3FullAccess",
-#     user="accure-codedeploy",
-# )
-
-# user_attach_1 = aws.iam.UserPolicyAttachment(
-#     "user_attach_1",
-#     policy_arn="arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess",
-#     user="accure-codedeploy",
-# )
-
-# g_actions_access_key = aws.iam.AccessKey(
-#     "g_actions_access",
-#     user=g_actions.name,
-#     pgp_key="keybase:some_person_that_exists"
-# )
-
-# pulumi.export("secret_access_key_id", g_actions_access_key.id)
-# pulumi.export("secret", g_actions_access_key.encrypted_secret)
 pulumi.export("public_ip", web.public_ip)
