@@ -9,7 +9,7 @@ sudo apt-get update -y
 sudo apt-get install -y ruby
 sudo apt-get install -y wget
 cd /home/ubuntu
-wget https://bucket-name.s3.region-identifier.amazonaws.com/latest/install
+wget https://aws-codedeploy-us-east-2.amazonaws.com/latest/install
 chmod +x ./install
 sudo ./install auto
 sudo apt update -y
