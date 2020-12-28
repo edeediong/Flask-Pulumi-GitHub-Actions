@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /simple
-    destination: /home/ubuntu/aws-codedeploy
+    destination: /home/ubuntu/accure
 
 hooks:
   ApplicationStart:

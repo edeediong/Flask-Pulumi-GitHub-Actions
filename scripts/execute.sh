@@ -1,12 +1,12 @@
 #!/bin/sh
 
-cd ~/aws-codedeploy
+cd ~/accure
 
-python3.6 -m venv accure
-source accure/bin/activate
+python3.6 -m venv accurevenv
+source accurevenv/bin/activate
 pip install -r requirements.txt
 
-sudo cp -rf /home/ubuntu/aws-codedeploy/gunicorn.service /etc/systemd/system/
+sudo cp -rf /home/ubuntu/accure/gunicorn.service /etc/systemd/system/
 
 sudo systemctl daemon-reload
 

@@ -12,9 +12,11 @@ cd /home/ubuntu
 wget https://aws-codedeploy-us-east-2.amazonaws.com/latest/install
 chmod +x ./install
 sudo ./install auto
+sudo service codedeploy-agent start
 sudo apt update -y
 sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools
 sudo apt install -y python3-venv
+mkdir accure/
 """
 
 ec2_role = aws.iam.Role(
