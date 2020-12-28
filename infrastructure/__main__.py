@@ -116,6 +116,17 @@ ingress_1 = aws.ec2.SecurityGroupRule("ingress_1",
     type="ingress",
 )
 
+egress = aws.ec2.SecurityGroupRule(
+    "egress",
+    from_port=0,
+    to_port=0,
+    protocol="-1",
+    security_group_id=elb_sg.id,
+    self=False,
+    cidr_blocks=["0.0.0.0/0"],
+    type="egress"
+)
+
 web = aws.ec2.Instance("web",
     ami="ami-0dd9f0e7df0f0a138",
     get_password_data=False,
