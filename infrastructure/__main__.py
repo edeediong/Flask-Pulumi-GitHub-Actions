@@ -5,11 +5,13 @@ import pulumi_aws as aws
 
 user_data = """
 #!/bin/bash
-sudo apt-get update -y
-sudo apt-get install -y ruby
+sudo apt update -y
+sudo apt install -y ruby
 sudo apt-get install -y wget
+
+# Install CodeDeploy for CICD
 cd /home/ubuntu
-wget https://aws-codedeploy-us-east-2.amazonaws.com/latest/install
+wget https://aws-codedeploy-us-east-2.s3.amazonaws.com/latest/install
 chmod +x ./install
 sudo ./install auto
 sudo service codedeploy-agent start
