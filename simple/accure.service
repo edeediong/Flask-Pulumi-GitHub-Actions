@@ -1,5 +1,5 @@
 [Unit]
-Description=gunicorn daemon
+Description=Gunicorn instance to service accure intro
 After=network.target
 
 [Service]
@@ -7,7 +7,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/accure
 Environment="PATH=/home/ubuntu/accure/accurevenv/bin"
-ExecStart=/home/ubuntu/accure/acccurevenv/bin/gunicorn --workers 3 --bind unix:myproject.sock -m 007 wsgi:app
+ExecStart=/home/ubuntu/accure/accurevenv/bin/gunicorn --workers 3 --bind unix:accure.sock -m 007 wsgi:app
 
 [Install]
 WantedBy=multi-user.target
