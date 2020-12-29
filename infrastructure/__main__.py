@@ -3,8 +3,7 @@
 import pulumi
 import pulumi_aws as aws
 
-user_data = """
-#!/bin/bash
+user_data = """#!/bin/bash
 sudo apt update -y
 sudo apt install -y ruby
 sudo apt-get install -y wget
