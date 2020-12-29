@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo chown -R ubuntu:ubuntu /home/ubuntu/accure/
 cd /home/ubuntu/accure
 
 python3.6 -m venv accurevenv
