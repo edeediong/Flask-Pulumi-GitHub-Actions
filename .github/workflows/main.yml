@@ -93,9 +93,10 @@ jobs:
     # Create deployment to CodeDeploy
     - name: AWS Create Deployment
       run: |
-        aws deploy create-deployment \
-          --application-name ${{ matrix.appname }} \
-          --deployment-config-name CodeDeployDefault.OneAtATime \
-          --deployment-group-name ${{ matrix.deploy-group }} \
-          --file-exists-behavior OVERWRITE \
-          --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip \
+        deployment_id=$(aws deploy create-deployment \
+        --application-name ${{ matrix.appname }} \
+        --deployment-config-name CodeDeployDefault.OneAtATime \
+        --deployment-group-name ${{ matrix.deploy-group }} \
+        --file-exists-behavior OVERWRITE \
+        --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip | jq '.deploymentId' | xargs)
+        aws deploy wait deployment-successful --deployment-id ${deployment_id}
