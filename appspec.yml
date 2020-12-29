@@ -3,6 +3,7 @@ os: linux
 files:
   - source: /simple
     destination: /home/ubuntu/accure
+    runas: ubuntu
 
 hooks:
   ApplicationStart:
