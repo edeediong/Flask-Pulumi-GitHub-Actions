@@ -19,6 +19,7 @@ sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-de
 sudo apt install -y python3-venv
 sudo apt install -y nginx
 sudo rm /etc/nginx/sites-enabled/default
+sudo usermod -aG www-data ubuntu
 
 """
 

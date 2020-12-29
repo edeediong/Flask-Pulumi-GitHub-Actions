@@ -7,7 +7,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/accure
 Environment="PATH=/home/ubuntu/accure/accurevenv/bin"
-ExecStart=/home/ubuntu/accure/accurevenv/bin/gunicorn --workers 3 --bind unix:accure.sock -m 007 wsgi:app
+ExecStart=/home/ubuntu/accure/accurevenv/bin/gunicorn --workers 3 --bind unix:accure.sock wsgi:app
 
 [Install]
 WantedBy=multi-user.target
