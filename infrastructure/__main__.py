@@ -146,7 +146,7 @@ web = aws.ec2.Instance("web",
 bucket = aws.s3.Bucket("bucket",
     acl="private",
     bucket="accure-codedeploy-deployment",
-    force_destroy=False,
+    force_destroy=True,
 )
 
 appname = aws.codedeploy.Application("appname",
