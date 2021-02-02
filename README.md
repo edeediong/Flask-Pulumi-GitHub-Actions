@@ -99,3 +99,4 @@ This [article](https://www.gitops.tech/) explains the entire idea of GitOps. For
 * AWS EC2 to serve the source code
 * AWS IAM to create access keys used by the repository.
 
+Heartless
