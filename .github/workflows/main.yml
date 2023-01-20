@@ -7,98 +7,115 @@ on:
     branches: main
 
 jobs:
-  pulumi-up:
-    name: Pulumi IaC
-    runs-on: ubuntu-latest
-    steps:
+    manual-approval:
+      name: Test Mannual Approval Action
+      runs-on: ubuntu-latest
+      steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-      - uses: pulumi/actions@v1
+      - uses: trstringer/manual-approval@v1
         with:
-          command: destroy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          PULUMI_ROOT: infrastructure
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: edeediong
+          minimum-approvals: 1
+          issue-title: "Deploying to Production"
+          issue-body: "Please approve or deny the this Prod deployment."
+          exclude-workflow-initiator-as-approver: false
 
-  buildAndTest:
-    name: CI Pipeline
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.6']
-    needs: pulumi-up
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+#   pulumi-up:
+#     name: Pulumi IaC
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 1
+#       - uses: pulumi/actions@v1
+#         with:
+#           command: destroy
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#           PULUMI_ROOT: infrastructure
 
-  deploy:
-    name: CD Pipeline
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        appname: ['aws-codedeploy']
-        deploy-group: ['accure-test']
-        s3-bucket: ['accure-codedeploy-deployment']
-        s3-filename: ['accure-deploy-${{ github.sha }}']
+#   buildAndTest:
+#     name: CI Pipeline
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         python-version: ['3.6']
+#     needs: pulumi-up
 
-    # Build & Test Images
-    needs: buildAndTest
-    steps:
-    - uses: actions/checkout@v2
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Set up Python ${{ matrix.python-version }}
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: ${{ matrix.python-version }}
+#     - name: Install dependencies
+#       run: |
+#         python -m pip install --upgrade pip
+#         python -m pip install flake8 pytest
+#         if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
+#     - name: Lint with flake8
+#       run: |
+#         # stop the build if there are Python syntax errors or undefined names
+#         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#     - name: Test with pytest
+#       run: |
+#         pytest
 
-    # Install AWS CLI 2
-    - name: Install AWS CLI 2
-      run: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip "awscliv2.zip"
-        sudo ./aws/install
+#   deploy:
+#     name: CD Pipeline
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         appname: ['aws-codedeploy']
+#         deploy-group: ['accure-test']
+#         s3-bucket: ['accure-codedeploy-deployment']
+#         s3-filename: ['accure-deploy-${{ github.sha }}']
 
-    # Configure AWS credentials
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+#     # Build & Test Images
+#     needs: buildAndTest
+#     steps:
+#     - uses: actions/checkout@v2
 
-    # Deploy push to AWS S3
-    - name: AWS Deploy Push
-      run: |
-        aws deploy push \
-        --application-name ${{ matrix.appname }} \
-        --description "This is a revision for the ${{ matrix.appname }}-${{ github.sha }}" \
-        --ignore-hidden-files \
-        --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
-        --source .
+#     # Install AWS CLI 2
+#     - name: Install AWS CLI 2
+#       run: |
+#         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#         unzip "awscliv2.zip"
+#         sudo ./aws/install
 
-    # Create deployment to CodeDeploy
-    - name: AWS Create Deployment
-      run: |
-        deployment_id=$(aws deploy create-deployment \
-        --application-name ${{ matrix.appname }} \
-        --deployment-config-name CodeDeployDefault.OneAtATime \
-        --deployment-group-name ${{ matrix.deploy-group }} \
-        --file-exists-behavior OVERWRITE \
-        --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip | jq -r '.deploymentId')
-        aws deploy wait deployment-successful --deployment-id ${deployment_id}
+#     # Configure AWS credentials
+#     - name: Configure AWS credentials
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-2
+
+#     # Deploy push to AWS S3
+#     - name: AWS Deploy Push
+#       run: |
+#         aws deploy push \
+#         --application-name ${{ matrix.appname }} \
+#         --description "This is a revision for the ${{ matrix.appname }}-${{ github.sha }}" \
+#         --ignore-hidden-files \
+#         --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
+#         --source .
+
+#     # Create deployment to CodeDeploy
+#     - name: AWS Create Deployment
+#       run: |
+#         deployment_id=$(aws deploy create-deployment \
+#         --application-name ${{ matrix.appname }} \
+#         --deployment-config-name CodeDeployDefault.OneAtATime \
+#         --deployment-group-name ${{ matrix.deploy-group }} \
+#         --file-exists-behavior OVERWRITE \
+#         --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip | jq -r '.deploymentId')
+#         aws deploy wait deployment-successful --deployment-id ${deployment_id}
