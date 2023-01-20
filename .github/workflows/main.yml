@@ -23,7 +23,6 @@ jobs:
           issue-body: "Please approve or deny the this Prod deployment."
           exclude-workflow-initiator-as-approver: false
 
-
 #   pulumi-up:
 #     name: Pulumi IaC
 #     runs-on: ubuntu-latest
