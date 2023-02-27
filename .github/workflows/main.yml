@@ -3,7 +3,6 @@ name: CI/CD
 on: 
   issue_comment:
     types: [created]
-
 jobs:
   fast_forward_job:
     name: Fast Forward
