@@ -1,12 +1,12 @@
 name: CI/CD
 
 on: 
-  issue_comment:
-    types: [created]
+  push:
+    branches:
+      - 'main'
 jobs:
   fast_forward_job:
-    name: Fast Forward
-    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/fast-forward')   
+    name: Fast Forward  
     runs-on: ubuntu-latest
     steps:
         # Advanced use case example
