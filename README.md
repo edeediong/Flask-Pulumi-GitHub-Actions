@@ -97,4 +97,4 @@ This [article](https://www.gitops.tech/) explains the entire idea of GitOps. For
 * AWS CodeDeploy for Continuous Deployment, used in automating the deployment to the server
 * AWS S3 to store the source code of the repository and push to AWS EC2.
 * AWS EC2 to serve the source code
-* AWS IAM to create access keys used by the repository.
+* AWS IAM to create access keys used by the repository..
