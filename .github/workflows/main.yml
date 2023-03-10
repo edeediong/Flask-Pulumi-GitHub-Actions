@@ -5,12 +5,23 @@ on:
     branches:
       - 'main'
 jobs:
-  fast_forward_job:
-    name: Fast Forward  
-    runs-on: ubuntu-latest
-    steps:
+    manual-approval:
+      name: Test Mannual Approval Action
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Merge main into production
+        run: git merge main
+    
+  # fast_forward_job:
+  #   name: Fast Forward  
+  #   runs-on: ubuntu-latest
+  #   steps:
         # Advanced use case example
-      - name: Fast Forward PR
+      # - name: Fast Forward PR
         id: ff-action
         uses: endre-spotlab/fast-forward-js-action@master
         with:
