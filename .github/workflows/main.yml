@@ -10,9 +10,9 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v3
-        ref: production
         with:
           fetch-depth: 0
+          ref: production
 
       - name: Merge main into production
         run: git merge ${{ github.sha }}
