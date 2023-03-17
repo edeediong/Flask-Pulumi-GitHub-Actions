@@ -5,98 +5,147 @@ on:
     branches:
       - 'main'
 jobs:
-  pulumi-up:
-    name: Pulumi IaC
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+    manual-approval:
+      name: Test Mannual Approval Action
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-      - uses: pulumi/actions@v1
-        with:
-          command: destroy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          PULUMI_ROOT: infrastructure
+          fetch-depth: 0
+          ref: production
 
-  buildAndTest:
-    name: CI Pipeline
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.6']
-    needs: pulumi-up
+      - name: Merge main into production
+        run: git merge ${{ github.sha }}
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
+      - name: Push to Production
+        run: git push
+    
+  # fast_forward_job:
+  #   name: Fast Forward  
+  #   runs-on: ubuntu-latest
+  #   steps:
+        # Advanced use case example
+      # - name: Fast Forward PR
+        # id: ff-action
+        # uses: endre-spotlab/fast-forward-js-action@master
+        # with:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   success_message: 'Success! Fast forwarded ***target_base*** to ***source_head***! ```git checkout target_base && git merge source_head --ff-only``` '
+        #   failure_message: 'Failed! Cannot do fast forward!'
+        #   update_status: true
+        #   failure_message_same_stage_and_prod: 'Failed! Possible reasons: ***1)Your feature branch ```source_head``` is outdated***. You need to rebase ```git checkout source_head && git pull --rebase origin prod_branch && git push --force``` ***2)Review required***, pull-request is not approved ***3)Checks were not successful*** (build status check failed)'
+        #   failure_message_diff_stage_and_prod: 'Failed! Possible reasons: ***1)```stage_branch``` is currently in use***. Another feature validation is ongoing. You need to wait. Later, when integration finishes, you will need to rebase ```git checkout source_head && git pull --rebase origin prod_branch && git push --force``` ***2)Review required***, pull-request is not approved ***3)Checks were not successful*** (build status check failed)'
+        #   production_branch: 'production'
+        #   staging_branch: 'main'
 
-  deploy:
-    name: CD Pipeline
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        appname: ['aws-codedeploy']
-        deploy-group: ['accure-test']
-        s3-bucket: ['accure-codedeploy-deployment']
-        s3-filename: ['accure-deploy-${{ github.sha }}']
+#     manual-approval:
+#       name: Test Mannual Approval Action
+#       runs-on: ubuntu-latest
+#       steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 1
+#       - uses: trstringer/manual-approval@v1
+#         with:
+#           secret: ${{ secrets.GITHUB_TOKEN }}
+#           approvers: edeediong
+#           minimum-approvals: 1
+#           issue-title: "Deploying to Production"
+#           issue-body: "Please approve or deny the this Prod deployment."
+#           exclude-workflow-initiator-as-approver: false
 
-    # Build & Test Images
-    needs: buildAndTest
-    steps:
-    - uses: actions/checkout@v2
+#   pulumi-up:
+#     name: Pulumi IaC
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 1
+#       - uses: pulumi/actions@v1
+#         with:
+#           command: destroy
+#         env:
+#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+#           PULUMI_ROOT: infrastructure
 
-    # Install AWS CLI 2
-    - name: Install AWS CLI 2
-      run: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip "awscliv2.zip"
-        sudo ./aws/install
+#   buildAndTest:
+#     name: CI Pipeline
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         python-version: ['3.6']
+#     needs: pulumi-up
 
-    # Configure AWS credentials
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Set up Python ${{ matrix.python-version }}
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: ${{ matrix.python-version }}
+#     - name: Install dependencies
+#       run: |
+#         python -m pip install --upgrade pip
+#         python -m pip install flake8 pytest
+#         if [ -f simple/requirements.txt ]; then pip install -r simple/requirements.txt; fi
+#     - name: Lint with flake8
+#       run: |
+#         # stop the build if there are Python syntax errors or undefined names
+#         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#     - name: Test with pytest
+#       run: |
+#         pytest
 
-    # Deploy push to AWS S3
-    - name: AWS Deploy Push
-      run: |
-        aws deploy push \
-        --application-name ${{ matrix.appname }} \
-        --description "This is a revision for the ${{ matrix.appname }}-${{ github.sha }}" \
-        --ignore-hidden-files \
-        --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
-        --source .
+#   deploy:
+#     name: CD Pipeline
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         appname: ['aws-codedeploy']
+#         deploy-group: ['accure-test']
+#         s3-bucket: ['accure-codedeploy-deployment']
+#         s3-filename: ['accure-deploy-${{ github.sha }}']
 
-    # Create deployment to CodeDeploy
-    - name: AWS Create Deployment
-      run: |
-        deployment_id=$(aws deploy create-deployment \
-        --application-name ${{ matrix.appname }} \
-        --deployment-config-name CodeDeployDefault.OneAtATime \
-        --deployment-group-name ${{ matrix.deploy-group }} \
-        --file-exists-behavior OVERWRITE \
-        --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip | jq -r '.deploymentId')
-        aws deploy wait deployment-successful --deployment-id ${deployment_id}
+#     # Build & Test Images
+#     needs: buildAndTest
+#     steps:
+#     - uses: actions/checkout@v2
+
+#     # Install AWS CLI 2
+#     - name: Install AWS CLI 2
+#       run: |
+#         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#         unzip "awscliv2.zip"
+#         sudo ./aws/install
+
+#     # Configure AWS credentials
+#     - name: Configure AWS credentials
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-2
+
+#     # Deploy push to AWS S3
+#     - name: AWS Deploy Push
+#       run: |
+#         aws deploy push \
+#         --application-name ${{ matrix.appname }} \
+#         --description "This is a revision for the ${{ matrix.appname }}-${{ github.sha }}" \
+#         --ignore-hidden-files \
+#         --s3-location s3://${{ matrix.s3-bucket }}/${{ matrix.s3-filename }}.zip \
+#         --source .
+
+#     # Create deployment to CodeDeploy
+#     - name: AWS Create Deployment
+#       run: |
+#         deployment_id=$(aws deploy create-deployment \
+#         --application-name ${{ matrix.appname }} \
+#         --deployment-config-name CodeDeployDefault.OneAtATime \
+#         --deployment-group-name ${{ matrix.deploy-group }} \
+#         --file-exists-behavior OVERWRITE \
+#         --s3-location bucket=${{ matrix.s3-bucket }},key=${{ matrix.s3-filename }}.zip,bundleType=zip | jq -r '.deploymentId')
+#         aws deploy wait deployment-successful --deployment-id ${deployment_id}
